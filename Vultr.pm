@@ -38,7 +38,7 @@ sub execute {
 		return $res->content;
 	}
 	else {
-		carp $res->status_line
+		confess $res->status_line
 	}
 }
 
@@ -207,6 +207,61 @@ Example Response:
 sub regions_list {
 	my ($self, $region) = @_;
 	my $url = $self->{api} . '/v1/regions/list';
+	return execute($self, $url);
+}
+
+
+=head2 server_bandwidth
+
+Parameters:
+ API Key
+ SUBID integer Unique identifier for this subscription.  These can be found using the v1/server/list call.
+
+Example Response:
+{
+    "incoming_bytes": [
+        [
+            "2014-06-10",
+            "81072581"
+        ],
+        [
+            "2014-06-11",
+            "222387466"
+        ],
+        [
+            "2014-06-12",
+            "216885232"
+        ],
+        [
+            "2014-06-13",
+            "117262318"
+        ]
+    ],
+    "outgoing_bytes": [
+        [
+            "2014-06-10",
+            "4059610"
+        ],
+        [
+            "2014-06-11",
+            "13432380"
+        ],
+        [
+            "2014-06-12",
+            "2455005"
+        ],
+        [
+            "2014-06-13",
+            "1106963"
+        ]
+    ]
+}
+
+=cut
+
+sub server_bandwidth {
+	my ($self, $subid) = @_;
+	my $url = $self->{api} . '/v1/server/bandwidth?api_key=' . $self->{key} . '&SUBID=' . $subid;
 	return execute($self, $url);
 }
 
