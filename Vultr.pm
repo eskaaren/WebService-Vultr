@@ -1,6 +1,18 @@
 package Vultr;
+use Carp;
 use LWP::UserAgent;
 use LWP::Protocol::https;
+
+=head1 B<HTTP Response Codes>
+
+ 200	Function successfully executed
+ 400	Invalid API location. Check the URL that you are using
+ 403	Invalid or missing API key. Check that your API key is present and matches your assigned key
+ 405	Invalid HTTP method. Check that the method (POST|GET) matches what the documentation indicates
+ 500	Internal server error. Try again at a later time
+ 412	Request failed. Check the response body for a more detailed description
+
+=cut
 
 my $api = 'https://api.vultr.com';
 
@@ -21,14 +33,16 @@ sub new {
 sub execute {
 	my ($self, $url) = @_;
 		my $res = $self->{ua}->get($url);
+		#print $res->content;
 	if ($res->is_success) {
 		return $res->content;
 	}
 	else {
-		die $res->status_line
+		carp $res->status_line
 	}
 }
 
+=head1 B<Vultr API methods>
 
 =head2 account_info
 
@@ -104,6 +118,96 @@ sub iso_list {
 	my $url = $self->{api} . '/v1/iso/list?api_key=' . $self->{key};
 	return execute($self, $url);
 	
+}
+
+
+=head2 plans_list
+
+Example Response:
+{
+    "1": {
+        "VPSPLANID": "1",
+        "name": "Starter",
+        "vcpu_count": "1",
+        "ram": "512",
+        "disk": "20",
+        "bandwidth": "1",
+        "price_per_month": "5.00",
+        "windows": false
+    },
+    "2": {
+        "VPSPLANID": "2",
+        "name": "Basic",
+        "vcpu_count": "1",
+        "ram": "1024",
+        "disk": "30",
+        "bandwidth": "2",
+        "price_per_month": "8.00",
+        "windows": false
+    }
+}
+
+=cut
+
+sub plans_list {
+	my $self = shift;
+	my $url = $self->{api} . '/v1/plans/list';
+	return execute($self, $url);
+}
+
+
+=head2 regions_availability
+
+(Type of VPS available)
+
+Parameters:
+ DCID integer Location to check availability of
+
+Example Response:
+[
+    40,
+    11,
+    45,
+    29,
+    41,
+    61
+]
+
+=cut
+
+sub regions_availability {
+	my ($self, $region) = @_;
+	my $url = $self->{api} . '/v1/regions/availability?DCID=' . $region;
+	return execute($self, $url);
+}
+
+
+=head2 regions_list
+
+Example Response:
+{
+    "1": {
+        "DCID": "1",
+        "name": "New Jersey",
+        "country": "US",
+        "continent": "North America",
+        "state": "NJ"
+    },
+    "2": {
+        "DCID": "2",
+        "name": "Chicago",
+        "country": "US",
+        "continent": "North America",
+        "state": "IL"
+    }
+}
+
+=cut
+
+sub regions_list {
+	my ($self, $region) = @_;
+	my $url = $self->{api} . '/v1/regions/list';
+	return execute($self, $url);
 }
 
 1;
