@@ -30,9 +30,21 @@ sub new {
 	return $self;
 } 
 
-sub execute {
+sub get {
 	my ($self, $url) = @_;
 		my $res = $self->{ua}->get($url);
+		#print $res->content;
+	if ($res->is_success) {
+		return $res->content;
+	}
+	else {
+		confess $res->status_line
+	}
+}
+
+sub post {
+		my ($self, $url, $param_ref) = @_;
+		my $res = $self->{ua}->post($url, $param_ref);
 		#print $res->content;
 	if ($res->is_success) {
 		return $res->content;
@@ -59,7 +71,7 @@ Example Response:
 sub account_info {
 	my $self = shift;
 	my $url = $self->{api} . '/v1/account/info?api_key=' . $self->{key};
-	return execute($self, $url);
+	return get($self, $url);
 }
 
 
@@ -88,7 +100,7 @@ Example Response:
 sub os_list {
 	my $self = shift;
 	my $url = $self->{api} . '/v1/os/list';
-	return execute($self, $url);
+	return get($self, $url);
 }
 
 
@@ -110,7 +122,7 @@ Example Response:
 sub iso_list {
 	my $self = shift;
 	my $url = $self->{api} . '/v1/iso/list?api_key=' . $self->{key};
-	return execute($self, $url);
+	return get($self, $url);
 	
 }
 
@@ -146,7 +158,7 @@ Example Response:
 sub plans_list {
 	my $self = shift;
 	my $url = $self->{api} . '/v1/plans/list';
-	return execute($self, $url);
+	return get($self, $url);
 }
 
 
@@ -172,7 +184,7 @@ Example Response:
 sub regions_availability {
 	my ($self, $region) = @_;
 	my $url = $self->{api} . '/v1/regions/availability?DCID=' . $region;
-	return execute($self, $url);
+	return get($self, $url);
 }
 
 
@@ -201,7 +213,7 @@ Example Response:
 sub regions_list {
 	my ($self, $region) = @_;
 	my $url = $self->{api} . '/v1/regions/list';
-	return execute($self, $url);
+	return get($self, $url);
 }
 
 
@@ -255,7 +267,7 @@ Example Response:
 sub server_bandwidth {
 	my ($self, $subid) = @_;
 	my $url = $self->{api} . '/v1/server/bandwidth?api_key=' . $self->{key} . '&SUBID=' . $subid;
-	return execute($self, $url);
+	return get($self, $url);
 }
 
 
@@ -286,11 +298,8 @@ Example Response:
 
 sub server_create {
 	my ($self, $param_ref) = @_;
-	my $url = $self->{api} . '/v1/server/bandwidth?api_key=' . $self->{key};
-	for my $key (keys %$param_ref) {
-		$url .= '&' . "$key=$param_ref->{$key}";
-	}
-	return execute($self, $url);
+	my $url = $self->{api} . '/v1/server/create?api_key=' . $self->{key};
+	return post($self, $url, $param_ref);
 }
 
 1;
