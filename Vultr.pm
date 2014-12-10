@@ -46,9 +46,6 @@ sub execute {
 
 =head2 account_info
 
-Parameters:
-	API key
-
 Example Response:
 {
     "balance": "-5519.11",
@@ -96,9 +93,6 @@ sub os_list {
 
 
 =head2 iso_list
-
-Parameters:
-	API key
 
 Example Response:
 {
@@ -214,7 +208,6 @@ sub regions_list {
 =head2 server_bandwidth
 
 Parameters:
- API Key
  SUBID integer Unique identifier for this subscription.  These can be found using the v1/server/list call.
 
 Example Response:
@@ -262,6 +255,41 @@ Example Response:
 sub server_bandwidth {
 	my ($self, $subid) = @_;
 	my $url = $self->{api} . '/v1/server/bandwidth?api_key=' . $self->{key} . '&SUBID=' . $subid;
+	return execute($self, $url);
+}
+
+
+=head2 server_create
+
+(Send in parameters as hash reference, use parameter names as keys)
+
+Parameters:
+ DCID integer Location to create this virtual machine in.  See v1/regions/list
+ VPSPLANID integer Plan to use when creating this virtual machine.  See v1/plans/list
+ OSID integer Operating system to use.  See v1/os/list
+ ipxe_chain_url string (optional) If you've selected the 'custom' operating system, this can be set to chainload the specified URL on bootup, via iPXE
+ ISOID string (optional)  If you've selected the 'custom' operating system, this is the ID of a specific ISO to mount during the deployment
+ SCRIPTID integer (optional) If you've not selected a 'custom' operating system, this can be the SCRIPTID of a startup script to execute on boot.  See v1/startupscript/list
+ SNAPSHOTID string (optional) If you've selected the 'snapshot' operating system, this should be the SNAPSHOTID (see v1/snapshot/list) to restore for the initial installation
+ enable_ipv6 string (optional) 'yes' or 'no'.  If yes, an IPv6 subnet will be assigned to the machine (where available)
+ enable_private_network string (optional) 'yes' or 'no'. If yes, private networking support will be added to the new server.
+ label string (optional) This is a text label that will be shown in the control panel
+ SSHKEYID string (optional) List of SSH keys to apply to this server on install (only valid for Linux/FreeBSD).  See v1/sshkey/list.  Seperate keys with commas
+ auto_backups string (optional) 'yes' or 'no'.  If yes, automatic backups will be enabled for this server (these have an extra charge associated with them)
+
+Example Response:
+{
+    "SUBID": "1312965"
+}
+
+=cut
+
+sub server_create {
+	my ($self, $param_ref) = @_;
+	my $url = $self->{api} . '/v1/server/bandwidth?api_key=' . $self->{key};
+	for my $key (keys %$param_ref) {
+		$url .= '&' . "$key=$param_ref->{$key}";
+	}
 	return execute($self, $url);
 }
 
