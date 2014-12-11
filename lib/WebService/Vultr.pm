@@ -35,10 +35,10 @@ sub new {
 
 sub get {
 	my ($self, $url) = @_;
-		my $res = $self->{ua}->get($url);
+	my $res = $self->{ua}->get($url);
 		#print $res->content;
 	if ($res->is_success) {
-		if (defined $res->content) {
+		if ($res->content =~ /\w+/) {
 			return $res->content;
 		}
 		else {
@@ -51,12 +51,10 @@ sub get {
 }
 
 sub post {
-		my ($self, $url, $param_ref) = @_;
-		my $res = $self->{ua}->post($url, $param_ref);
-		#print $res->content;
+	my ($self, $url, $param_ref) = @_;
+	my $res = $self->{ua}->post($url, $param_ref);
 	if ($res->is_success) {
-		if (defined $res->content) {
-			print $res->status_line;
+		if ($res->content =~ /\w+/) {
 			return $res->content;
 		}
 		else {
@@ -314,6 +312,24 @@ sub server_create {
 	my ($self, $param_ref) = @_;
 	my $url = $self->{api} . '/v1/server/create?api_key=' . $self->{key};
 	return post($self, $url, $param_ref);
+}
+
+
+=head2 server_destroy
+
+Parameters:
+ SUBID integer Unique identifier for this subscription.  These can be found using the v1/server/list call.
+
+
+Example Response:
+No response, check HTTP result code
+
+=cut
+
+sub server_destroy {
+    my ($self, $param_ref) = @_;
+    my $url = $self->{api} . '/v1/server/destroy?api_key=' . $self->{key};
+    return post($self, $url, $param_ref);
 }
 
 
