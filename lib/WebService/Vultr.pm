@@ -1,7 +1,10 @@
-package Vultr;
+use strict; use warnings;
+package WebService::Vultr;
 use Carp;
 use LWP::UserAgent;
 use LWP::Protocol::https;
+
+# ABSTRACT: Perl bindings for the Vultr API
 
 =head1 B<HTTP Response Codes>
 
