@@ -35,7 +35,12 @@ sub get {
 		my $res = $self->{ua}->get($url);
 		#print $res->content;
 	if ($res->is_success) {
-		return $res->content;
+		if (defined $res->content) {
+			return $res->content;
+		}
+		else {
+			return $res->status_line;
+		}
 	}
 	else {
 		confess $res->status_line
@@ -47,7 +52,13 @@ sub post {
 		my $res = $self->{ua}->post($url, $param_ref);
 		#print $res->content;
 	if ($res->is_success) {
-		return $res->content;
+		if (defined $res->content) {
+			print $res->status_line;
+			return $res->content;
+		}
+		else {
+			return $res->status_line;
+		}
 	}
 	else {
 		confess $res->status_line
@@ -299,6 +310,27 @@ Example Response:
 sub server_create {
 	my ($self, $param_ref) = @_;
 	my $url = $self->{api} . '/v1/server/create?api_key=' . $self->{key};
+	return post($self, $url, $param_ref);
+}
+
+
+=head2 server_create_ipv4
+
+Parameters:
+ SUBID integer Unique identifier for this subscription. These can be found using the v1/server/list call.
+ reboot string (optional, default 'yes') 'yes' or 'no'. If yes, the server is rebooted immediately.
+
+Example Response:
+No response, check HTTP result code
+
+=cut
+
+sub server_create_ipv4 {
+	my ($self, $param_ref) = @_;
+	unless (defined $param_ref->{reboot}) {
+		$param_ref->{reboot} = "yes";
+	}
+	my $url = $self->{api} . '/v1/server/create_ipv4?api_key=' . $self->{key};
 	return post($self, $url, $param_ref);
 }
 
