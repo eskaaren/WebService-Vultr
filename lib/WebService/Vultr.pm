@@ -353,4 +353,24 @@ sub server_create_ipv4 {
 	return post($self, $url, $param_ref);
 }
 
+
+=head2 server_destroy_ipv4
+
+(Server will be hard restarted!)
+
+Parameters:
+ SUBID integer Unique identifier for this subscription. These can be found using the v1/server/list call.
+ ip string IPv4 address to remove.
+
+Example Response:
+No response, check HTTP result code
+
+=cut
+
+sub server_destroy_ipv4 {
+    my ($self, $param_ref) = @_;
+    my $url = $self->{api} . '/v1/server/destroy_ipv4?api_key=' . $self->{key};
+    return post($self, $url, $param_ref);
+}
+
 1;
