@@ -1,14 +1,11 @@
-use strict; use warnings;
+    use strict; use warnings;
 package WebService::Vultr;
+our $VERSION = '0.12';
 use Carp;
 use LWP::UserAgent;
 use LWP::Protocol::https;
 
 # ABSTRACT: Perl bindings for the Vultr API
-# https://www.vultr.com/api/
-
-#
-# http status strings are returned when the API has no response string
 
 =head1 B<HTTP Response Codes>
 
@@ -24,49 +21,79 @@ use LWP::Protocol::https;
 my $api = 'https://api.vultr.com';
 
 sub new {
-	my ($package, $key) = @_;
+	my ($package, $key, $mode) = @_;
+    unless (defined $mode) {$mode = 'res'};
+    unless ($mode eq 'str') {
+        $mode = 'res';
+    }
+
 	my $ua = LWP::UserAgent->new;
 
 	my $self = { 
 		key => "$key",
 		api => "$api",
-		ua => $ua
+		ua => $ua,
+        mode => "$mode"
 	};
 
 	bless $self, $package;
 	return $self;
-} 
-
-sub get {
-	my ($self, $url) = @_;
-	my $res = $self->{ua}->get($url);
-	if ($res->is_success) {
-		if ($res->content =~ /\w+/) {
-			return $res->content;
-		}
-		else {
-			return $res->status_line;
-		}
-	}
-	else {
-		confess $res->status_line
-	}
 }
 
-sub post {
+
+=head2 this_get 
+
+Returns the HTTP::Response object as default. If 'str' is used as mode it returns the response string or the resonse status line.
+
+=cut 
+
+sub this_get {
+	my ($self, $url) = @_;
+	my $res = $self->{ua}->get($url);
+    if ($self->{mode} eq 'str') {
+	    if ($res->is_success) {
+		    if ($res->content =~ /\w+/) {
+			    return $res->content;
+		    }
+		    else {
+			    return $res->status_line;
+		    }
+	    }
+	    else {
+		    confess $res->status_line
+	    }
+    }
+    else {
+        return $res;
+    }
+}
+
+
+=head2 this_post 
+
+Returns the HTTP::Response object as default. If 'str' is used as mode it returns the response string or the resonse status line.
+
+=cut 
+
+sub this_post {
 	my ($self, $url, $param_ref) = @_;
 	my $res = $self->{ua}->post($url, $param_ref);
-	if ($res->is_success) {
-		if ($res->content =~ /\w+/) {
-			return $res->content;
-		}
-		else {
-			return $res->status_line;
-		}
-	}
-	else {
-		confess $res->status_line
-	}
+    if ($self->{mode} eq 'str') {
+	    if ($res->is_success) {
+		    if ($res->content =~ /\w+/) {
+			    return $res->content;
+		    }
+		    else {
+			    return $res->status_line;
+		    }
+	    }
+	    else {
+		    confess $res->status_line
+	    }
+    }
+    else {
+        return $res;
+    }
 }
 
 =head1 B<Vultr API methods>
@@ -95,7 +122,7 @@ No Parameters
 sub account_info {
 	my $self = shift;
 	my $url = $self->{api} . '/v1/account/info?api_key=' . $self->{key};
-	return get($self, $url);
+	return this_get($self, $url);
 }
 
 
@@ -133,7 +160,7 @@ No Parameters
 sub os_list {
 	my $self = shift;
 	my $url = $self->{api} . '/v1/os/list';
-	return get($self, $url);
+	return this_get($self, $url);
 }
 
 
@@ -164,7 +191,7 @@ No Parameters
 sub iso_list {
 	my $self = shift;
 	my $url = $self->{api} . '/v1/iso/list?api_key=' . $self->{key};
-	return get($self, $url);
+	return this_get($self, $url);
 	
 }
 
@@ -209,7 +236,7 @@ No Parameters
 sub plans_list {
 	my $self = shift;
 	my $url = $self->{api} . '/v1/plans/list';
-	return get($self, $url);
+	return this_get($self, $url);
 }
 
 
@@ -237,7 +264,7 @@ DCID integer Location to check availability of
 sub regions_availability {
 	my ($self, $region) = @_;
 	my $url = $self->{api} . '/v1/regions/availability?DCID=' . $region;
-	return get($self, $url);
+	return this_get($self, $url);
 }
 
 
@@ -275,7 +302,7 @@ No Parameters
 sub regions_list {
 	my ($self, $region) = @_;
 	my $url = $self->{api} . '/v1/regions/list';
-	return get($self, $url);
+	return this_get($self, $url);
 }
 
 
@@ -335,7 +362,7 @@ SUBID integer Unique identifier for this subscription.  These can be found using
 sub server_bandwidth {
 	my ($self, $subid) = @_;
 	my $url = $self->{api} . '/v1/server/bandwidth?api_key=' . $self->{key} . '&SUBID=' . $subid;
-	return get($self, $url);
+	return this_get($self, $url);
 }
 
 
@@ -374,7 +401,7 @@ auto_backups string (optional) 'yes' or 'no'.  If yes, automatic backups will be
 sub server_create {
 	my ($self, $param_ref) = @_;
 	my $url = $self->{api} . '/v1/server/create?api_key=' . $self->{key};
-	return post($self, $url, $param_ref);
+	return this_post($self, $url, $param_ref);
 }
 
 
@@ -397,7 +424,7 @@ SUBID integer Unique identifier for this subscription.  These can be found using
 sub server_destroy {
     my ($self, $param_ref) = @_;
     my $url = $self->{api} . '/v1/server/destroy?api_key=' . $self->{key};
-    return post($self, $url, $param_ref);
+    return this_post($self, $url, $param_ref);
 }
 
 
@@ -424,7 +451,7 @@ sub server_create_ipv4 {
 		$param_ref->{reboot} = "yes";
 	}
 	my $url = $self->{api} . '/v1/server/create_ipv4?api_key=' . $self->{key};
-	return post($self, $url, $param_ref);
+	return this_post($self, $url, $param_ref);
 }
 
 
@@ -448,7 +475,7 @@ ip string IPv4 address to remove.
 sub server_destroy_ipv4 {
     my ($self, $param_ref) = @_;
     my $url = $self->{api} . '/v1/server/destroy_ipv4?api_key=' . $self->{key};
-    return post($self, $url, $param_ref);
+    return this_post($self, $url, $param_ref);
 }
 
 
@@ -471,7 +498,7 @@ SUBID integer Unique identifier for this subscription.  These can be found using
 sub server_halt {
     my ($self, $param_ref) = @_;
     my $url = $self->{api} . '/v1/server/halt?api_key=' . $self->{key};
-    return post($self, $url, $param_ref);
+    return this_post($self, $url, $param_ref);
 }
 
 
@@ -495,7 +522,7 @@ label string This is a text label that will be shown in the control panel.
 sub server_label_set {
     my ($self, $param_ref) = @_;
     my $url = $self->{api} . '/v1/server/label_set?api_key=' . $self->{key};
-    return post($self, $url, $param_ref);
+    return this_post($self, $url, $param_ref);
 }
 
 
@@ -550,7 +577,7 @@ sub server_list {
     if (defined $subid) {
         $url .= "&SUBID=$subid";
     }
-    return get($self, $url);
+    return this_get($self, $url);
 }
 
 
@@ -597,7 +624,7 @@ SUBID integer
 sub server_list_ipv4 {
     my ($self, $subid) = @_;
     my $url = $self->{api} . '/v1/server/list_ipv4?api_key=' . $self->{key} . "&SUBID=$subid";
-    return get($self, $url);
+    return this_get($self, $url);
 }
 
 
@@ -629,7 +656,7 @@ SUBID integer
 sub server_list_ipv6 {
     my ($self, $subid) = @_;
     my $url = $self->{api} . '/v1/server/list_ipv6?api_key=' . $self->{key} . "&SUBID=$subid";
-    return get($self, $url);
+    return this_get($self, $url);
 }
 
 
@@ -653,7 +680,7 @@ OSID integer Operating system to use. See /v1/server/os_change_list.
 sub server_os_change {
     my ($self, $param_ref) = @_;
     my $url = $self->{api} . '/v1/server/os_change?api_key=' . $self->{key};
-    return post($self, $url, $param_ref);
+    return this_post($self, $url, $param_ref);
 }
 
 
@@ -693,7 +720,7 @@ SUBID integer Unique identifier for this subscription. These can be found using 
 sub server_os_change_list {
     my ($self, $subid) = @_;
     my $url = $self->{api} . '/v1/server/os_change_list?api_key=' . $self->{key} . "&SUBID=$subid";
-    return get($self, $url);
+    return this_get($self, $url);
 }
 
 
@@ -716,7 +743,7 @@ SUBID integer Unique identifier for this subscription.  These can be found using
 sub server_reboot {
     my ($self, $param_ref) = @_;
     my $url = $self->{api} . '/v1/server/reboot?api_key=' . $self->{key};
-    return post($self, $url, $param_ref);
+    return this_post($self, $url, $param_ref);
 }
 
 
@@ -739,7 +766,7 @@ SUBID integer Unique identifier for this subscription.  These can be found using
 sub server_reinstall {
     my ($self, $param_ref) = @_;
     my $url = $self->{api} . '/v1/server/reinstall?api_key=' . $self->{key};
-    return post($self, $url, $param_ref);
+    return this_post($self, $url, $param_ref);
 }
 
 
@@ -763,7 +790,7 @@ BACKUPID string BACKUPID (see v1/backup/list) to restore to this instance
 sub server_restore_backup {
     my ($self, $param_ref) = @_;
     my $url = $self->{api} . '/v1/server/restore_backup?api_key=' . $self->{key};
-    return post($self, $url, $param_ref);
+    return this_post($self, $url, $param_ref);
 }
 
 
@@ -787,7 +814,7 @@ SNAPSHOTID string SNAPSHOTID (see v1/snapshot/list) to restore to this instance
 sub server_restore_snapshot {
     my ($self, $param_ref) = @_;
     my $url = $self->{api} . '/v1/server/restore_snapshot?api_key=' . $self->{key};
-    return post($self, $url, $param_ref);
+    return this_post($self, $url, $param_ref);
 }
 
 
@@ -811,7 +838,7 @@ ip string IPv4 address used in the reverse DNS update. These can be found with t
 sub server_reverse_default_ipv4 {
     my ($self, $param_ref) = @_;
     my $url = $self->{api} . '/v1/server/reverse_default_ipv4?api_key=' . $self->{key};
-    return post($self, $url, $param_ref);
+    return this_post($self, $url, $param_ref);
 }
 
 
@@ -835,7 +862,7 @@ ip string IPv6 address used in the reverse DNS update. These can be found with t
 sub server_reverse_delete_ipv6 {
     my ($self, $param_ref) = @_;
     my $url = $self->{api} . '/v1/server/reverse_delete_ipv6?api_key=' . $self->{key};
-    return post($self, $url, $param_ref);
+    return this_post($self, $url, $param_ref);
 }
 
 
@@ -867,7 +894,7 @@ SUBID integer
 sub server_reverse_list_ipv6 {
     my ($self, $subid) = @_;
     my $url = $self->{api} . '/v1/server/reverse_list_ipv6?api_key=' . $self->{key} . "&SUBID=$subid";
-    return get($self, $url);
+    return this_get($self, $url);
 }
 
 
@@ -892,7 +919,7 @@ entry string reverse DNS entry.
 sub server_reverse_set_ipv4 {
     my ($self, $param_ref) = @_;
     my $url = $self->{api} . '/v1/server/reverse_set_ipv4?api_key=' . $self->{key};
-    return post($self, $url, $param_ref);
+    return this_post($self, $url, $param_ref);
 }
 
 
@@ -917,7 +944,7 @@ entry string reverse DNS entry.
 sub server_reverse_set_ipv6 {
     my ($self, $param_ref) = @_;
     my $url = $self->{api} . '/v1/server/reverse_set_ipv6?api_key=' . $self->{key};
-    return post($self, $url, $param_ref);
+    return this_post($self, $url, $param_ref);
 }
 
 
@@ -940,7 +967,7 @@ SUBID integer Unique identifier for this subscription.  These can be found using
 sub server_start {
     my ($self, $param_ref) = @_;
     my $url = $self->{api} . '/v1/server/reverse_start?api_key=' . $self->{key};
-    return post($self, $url, $param_ref);
+    return this_post($self, $url, $param_ref);
 }
 
 
@@ -967,7 +994,7 @@ description string (optional) Description of snapshot contents
 sub snapshot_create {
     my ($self, $param_ref) = @_;
     my $url = $self->{api} . '/v1/snapshot/create?api_key=' . $self->{key};
-    return post($self, $url, $param_ref);
+    return this_post($self, $url, $param_ref);
 }
 
 
@@ -990,7 +1017,7 @@ SNAPSHOTID string Unique identifier for this snapshot.  These can be found using
 sub snapshot_destroy {
     my ($self, $param_ref) = @_;
     my $url = $self->{api} . '/v1/snapshot/destroy?api_key=' . $self->{key};
-    return post($self, $url, $param_ref);
+    return this_post($self, $url, $param_ref);
 }
 
 
@@ -1028,7 +1055,7 @@ No Parameters
 sub snapshot_list {
     my ($self) = shift;
     my $url = $self->{api} . '/v1/snapshot/list?api_key=' . $self->{key};
-    return get($self, $url);
+    return this_get($self, $url);
 }
 
 
@@ -1056,7 +1083,7 @@ ssh_key string SSH public key (in authorized_keys format)
 sub sshkey_create {
     my ($self, $param_ref) = @_;
     my $url = $self->{api} . '/v1/sshkey/create?api_key=' . $self->{key};
-    return post($self, $url, $param_ref);
+    return this_post($self, $url, $param_ref);
 }
 
 
@@ -1079,7 +1106,7 @@ SSHKEYID string Unique identifier for this SSH key.  These can be found using th
 sub sshkey_destroy {
     my ($self, $param_ref) = @_;
     my $url = $self->{api} . '/v1/sshkey/destroy?api_key=' . $self->{key};
-    return post($self, $url, $param_ref);
+    return this_post($self, $url, $param_ref);
 }
 
 
@@ -1109,7 +1136,7 @@ No Parameters
 sub sshkey_list {
     my ($self) = shift;
     my $url = $self->{api} . '/v1/sshkey/list?api_key=' . $self->{key};
-    return get($self, $url);
+    return this_get($self, $url);
 }
 
 
@@ -1137,7 +1164,7 @@ ssh_key string (optional) New SSH key contents
 sub sshkey_update {
     my ($self, $param_ref) = @_;
     my $url = $self->{api} . '/v1/sshkey/update?api_key=' . $self->{key};
-    return post($self, $url, $param_ref);
+    return this_post($self, $url, $param_ref);
 }
 
 
@@ -1166,7 +1193,7 @@ type string boot|pxe Type of startup script.  Default is 'boot'
 sub startupscript_create {
     my ($self, $param_ref) = @_;
     my $url = $self->{api} . '/v1/startupscript/create?api_key=' . $self->{key};
-    return post($self, $url, $param_ref);
+    return this_post($self, $url, $param_ref);
 }
 
 
@@ -1189,7 +1216,7 @@ SCRIPTID string Unique identifier for this startup script.  These can be found u
 sub startupscript_destroy {
     my ($self, $param_ref) = @_;
     my $url = $self->{api} . '/v1/startupscript/destroy?api_key=' . $self->{key};
-    return post($self, $url, $param_ref);
+    return this_post($self, $url, $param_ref);
 }
 
 
@@ -1229,7 +1256,7 @@ No Parameters
 sub startupscript_list {
     my ($self, $param_ref) = @_;
     my $url = $self->{api} . '/v1/startupscript/list?api_key=' . $self->{key};
-    return get($self, $url);
+    return this_get($self, $url);
 }
 
 
@@ -1257,7 +1284,7 @@ script string (optional) New startup script contents
 sub startupscript_update {
     my ($self, $param_ref) = @_;
     my $url = $self->{api} . '/v1/startupscript/update?api_key=' . $self->{key};
-    return post($self, $url, $param_ref);
+    return this_post($self, $url, $param_ref);
 }
 
 

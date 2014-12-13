@@ -10,6 +10,15 @@ use strict; use warnings;
 my $key = "09irutnfte34gwOvbjkre";
 
 my $vultr = WebService::Vultr->new($key);
+my $response = $vultr->account_info;
+
+print "HTTP status code: " . $response->code . "\n";
+print "Status line: " .  $response->status_line . "\n";
+print "Content: " .  $response->content . "\n";
+
+# The new subroutine has a optional parameter that takes the string 'str' for convenience.
+# Using str as mode for the rest of these print examples, else it returns the HTTP::Response object.
+$vultr = WebService::Vultr->new($key, 'str');
 
 print "Account info: " . $vultr->account_info . "\n\n";
 
