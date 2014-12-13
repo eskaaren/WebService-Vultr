@@ -3,6 +3,7 @@ use WebService::Vultr;
 
 use strict; use warnings;
 
+# https://www.vultr.com/api/
 # All values are examples only - replace with your own!
 
 # Key is found in settings in your Vultr account
@@ -47,6 +48,21 @@ my $param_ref = {
 	SUBID => '1569220',
 	ip => '192.168.0.254' 
 };
-print $vultr->server_create_ipv4($param_ref);
+print $vultr->server_destroy_ipv4($param_ref);
+
+my $param_ref = {
+	SUBID => '1569220'
+};
+print $vultr->server_halt($param_ref);
+
+my $param_ref = {
+	SUBID => '1569220',
+	label => 'webserver'
+};
+print $vultr->server_label_set($param_ref);
+
+print $vultr->server_list($subid);
+
+print $vultr->server_list_ipv4();
 
 =cut
