@@ -7,9 +7,12 @@ use strict; use warnings;
 # All values are examples only - replace with your own!
 
 # Key is found in settings in your Vultr account
-my $key = "l/h6Y7pUh.dGreRMk";
+my $key = "09irutnfte34gwOvbjkre";
 
 my $vultr = WebService::Vultr->new($key);
+
+print "Account info: " . $vultr->account_info . "\n\n";
+
 
 =pod
 print "Account info: " . $vultr->account_info . "\n\n";
@@ -65,4 +68,7 @@ print $vultr->server_list($subid);
 
 print $vultr->server_list_ipv4();
 
+...
+
+And so on...
 =cut
