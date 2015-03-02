@@ -1,4 +1,4 @@
-    use strict; use warnings;
+use strict; use warnings;
 package WebService::Vultr;
 our $VERSION = '0.12';
 use Carp;
@@ -1286,6 +1286,5 @@ sub startupscript_update {
     my $url = $self->{api} . '/v1/startupscript/update?api_key=' . $self->{key};
     return this_post($self, $url, $param_ref);
 }
-
 
 1;
